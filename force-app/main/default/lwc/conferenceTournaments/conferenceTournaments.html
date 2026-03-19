@@ -1,0 +1,162 @@
+<template>
+    <div class="conf-container">
+        <!-- Header Bar -->
+        <div class="conf-header">
+            <div class="conf-header-left">
+                <h2 class="conf-title">Conference Tournaments</h2>
+                <div class="conf-meta">
+                    <template lwc:if={liveCount}>
+                        <span class="meta-badge live">{liveCount} Live</span>
+                    </template>
+                    <span class="meta-badge active">{activeCount} Active</span>
+                    <span class="meta-badge complete">{finishedCount} Complete</span>
+                    <span class="meta-badge total">{totalConferences} Conferences</span>
+                    <span class="meta-badge total">{totalGames} Games</span>
+                </div>
+            </div>
+            <div class="conf-header-right">
+                <span class="updated-text">Updated {asOfTime}</span>
+                <lightning-input
+                    type="search"
+                    placeholder="Filter conferences..."
+                    onchange={handleFilterChange}
+                    variant="label-hidden"
+                    class="conf-search">
+                </lightning-input>
+                <lightning-button-icon
+                    icon-name="utility:refresh"
+                    alternative-text="Refresh"
+                    variant="border-filled"
+                    onclick={handleRefresh}
+                    disabled={isRefreshing}>
+                </lightning-button-icon>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <template lwc:if={isLoading}>
+            <div class="loading-wrap">
+                <lightning-spinner alternative-text="Loading conferences" size="medium"></lightning-spinner>
+                <p class="loading-text">Loading conference tournament schedules from ESPN...</p>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template lwc:if={showEmpty}>
+            <div class="empty-state">
+                <lightning-icon icon-name="utility:world" size="large"></lightning-icon>
+                <h3>No Conference Tournaments Found</h3>
+                <p>Click refresh to pull conference tournament data from ESPN.</p>
+            </div>
+        </template>
+
+        <!-- Main Content -->
+        <template lwc:if={hasConferences}>
+            <div class="conf-layout">
+                <!-- Conference List (Left) -->
+                <div class="conf-list-panel">
+                    <template for:each={filteredConferences} for:item="conf">
+                        <div key={conf.key}
+                             class={conf.cardClass}
+                             data-conf-name={conf.conferenceName}
+                             onclick={handleConfSelect}>
+                            <div class="conf-card-top">
+                                <span class="conf-name">{conf.conferenceName}</span>
+                                <span class={conf.statusClass}>{conf.statusLabel}</span>
+                            </div>
+                            <div class="conf-card-bottom">
+                                <span class="conf-progress">{conf.progressText}</span>
+                                <template lwc:if={conf.hasLive}>
+                                    <span class="live-dot-sm"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Games Detail (Right) -->
+                <div class="conf-detail-panel">
+                    <template lwc:if={hasSelectedConf}>
+                        <div class="detail-header">
+                            <h3 class="detail-title">{selectedConf}</h3>
+                            <template lwc:if={selectedConfStats}>
+                                <div class="detail-stats">
+                                    <span class="detail-stat">{selectedConfStats.total} games</span>
+                                    <span class="detail-stat">{selectedConfStats.completed} final</span>
+                                    <template lwc:if={selectedConfStats.live}>
+                                        <span class="detail-stat live">{selectedConfStats.live} live</span>
+                                    </template>
+                                    <span class="detail-stat">{selectedConfStats.scheduled} upcoming</span>
+                                </div>
+                            </template>
+                        </div>
+
+                        <template lwc:if={hasSelectedGames}>
+                            <div class="games-list">
+                                <template for:each={selectedGames} for:item="game">
+                                    <div key={game.key} class="game-card">
+                                        <div class="gc-left">
+                                            <span class="gc-round">{game.roundLabel}</span>
+                                            <span class={game.statusClass}>{game.statusLabel}</span>
+                                            <template lwc:if={game.hasBroadcast}>
+                                                <span class="gc-broadcast">{game.broadcast}</span>
+                                            </template>
+                                        </div>
+                                        <div class="gc-matchup">
+                                            <div class={game.awayRowClass}>
+                                                <div class="gc-team-left">
+                                                    <template lwc:if={game.hasAwayLogo}>
+                                                        <img src={game.awayLogo} alt="" class="gc-logo" loading="lazy" onerror={handleLogoError}>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <div class="gc-logo-ph"></div>
+                                                    </template>
+                                                    <span class="gc-team-name">{game.awayDisplay}</span>
+                                                </div>
+                                                <span class={game.awayScoreClass}>{game.awayScoreDisplay}</span>
+                                            </div>
+                                            <div class={game.homeRowClass}>
+                                                <div class="gc-team-left">
+                                                    <template lwc:if={game.hasHomeLogo}>
+                                                        <img src={game.homeLogo} alt="" class="gc-logo" loading="lazy" onerror={handleLogoError}>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <div class="gc-logo-ph"></div>
+                                                    </template>
+                                                    <span class="gc-team-name">{game.homeDisplay}</span>
+                                                </div>
+                                                <span class={game.homeScoreClass}>{game.homeScoreDisplay}</span>
+                                            </div>
+                                        </div>
+                                        <template lwc:if={game.hasOdds}>
+                                            <div class="gc-odds">
+                                                <span>{game.spreadDetail}</span>
+                                                <template lwc:if={game.overUnder}>
+                                                    <span>O/U: {game.overUnder}</span>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template lwc:else>
+                            <div class="empty-games">
+                                <p>No games found for this conference tournament.</p>
+                            </div>
+                        </template>
+                    </template>
+
+                    <template lwc:else>
+                        <div class="empty-detail">
+                            <lightning-icon icon-name="utility:touch_action" size="large"></lightning-icon>
+                            <h3>Select a Conference</h3>
+                            <p>Click a conference from the list to view the full tournament schedule, game results, and upcoming matchups.</p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

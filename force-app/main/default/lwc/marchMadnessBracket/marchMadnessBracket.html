@@ -1,0 +1,438 @@
+<template>
+    <lightning-card title="NCAA Tournament Bracket" icon-name="standard:team_member">
+        <div slot="actions">
+            <lightning-button-group>
+                <lightning-button
+                    label="Load Bracket"
+                    icon-name="utility:download"
+                    variant="brand"
+                    onclick={handleLoadBracket}
+                    disabled={isLoadingBracket}>
+                </lightning-button>
+                <lightning-button
+                    label="Refresh Scores"
+                    icon-name="utility:refresh"
+                    onclick={handleRefreshResults}
+                    disabled={isRefreshing}>
+                </lightning-button>
+            </lightning-button-group>
+        </div>
+
+        <template if:true={isLoading}>
+            <div class="slds-align_absolute-center loading-container">
+                <lightning-spinner alternative-text="Loading bracket" size="large"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={errorMessage}>
+            <div class="slds-notify slds-notify_alert slds-alert_error slds-m-around_medium" role="alert">
+                <lightning-icon icon-name="utility:error" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                <span>{errorMessage}</span>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <template if:false={errorMessage}>
+                <!-- Model Selector Bar -->
+                <div class="model-selector-bar">
+                    <div class="model-selector-label">Prediction Model:</div>
+                    <div class="model-selector-buttons">
+                        <template for:each={modelOptions} for:item="model">
+                            <button
+                                key={model.value}
+                                class={model.cssClass}
+                                data-model={model.value}
+                                onclick={handleModelSelect}>
+                                <span class="model-btn-label">{model.label}</span>
+                            </button>
+                        </template>
+                    </div>
+                    <div class="model-selector-stats">
+                        <span class="stat-pill stat-stat" title="Statistical predictions">{predictionSummaryStats.statistical} Stats</span>
+                        <span class="stat-pill stat-mascot" title="Mascot Battle predictions">{predictionSummaryStats.mascot} Mascot</span>
+                        <span class="stat-pill stat-ai" title="AI Research predictions">{predictionSummaryStats.ai} AI</span>
+                    </div>
+                </div>
+
+                <!-- Round Selector -->
+                <div class="round-selector-bar">
+                    <lightning-button-group>
+                        <template for:each={roundOptions} for:item="round">
+                            <lightning-button
+                                key={round.value}
+                                label={round.label}
+                                variant={round.variant}
+                                onclick={handleRoundSelect}
+                                data-round={round.value}>
+                            </lightning-button>
+                        </template>
+                    </lightning-button-group>
+                </div>
+
+                <div class="bracket-and-detail">
+                    <!-- Bracket View -->
+                    <div class={bracketAreaClass}>
+                        <div class="bracket-wrapper">
+                            <template if:true={showFullBracket}>
+                                <div class="bracket-container">
+                                    <div class="bracket-left">
+                                        <div class="region-section">
+                                            <h2 class="region-title">East</h2>
+                                            <div class="region-rounds">
+                                                <template for:each={eastRounds} for:item="round">
+                                                    <div key={round.name} class={round.className}>
+                                                        <template for:each={round.games} for:item="game">
+                                                            <div key={game.Id} class={game.selectedGameClass} onclick={handleGameClick} data-game-id={game.Id}>
+                                                                <div class={game.team1Class}>
+                                                                    <template lwc:if={game.team1Logo}><img src={game.team1Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                                    <span class="team-seed">{game.team1Seed}</span>
+                                                                    <span class="team-name" title={game.team1Name}>{game.team1Name}</span>
+                                                                    <span class="team-score">{game.displayScore1}</span>
+                                                                </div>
+                                                                <div class={game.team2Class}>
+                                                                    <template lwc:if={game.team2Logo}><img src={game.team2Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                                    <span class="team-seed">{game.team2Seed}</span>
+                                                                    <span class="team-name" title={game.team2Name}>{game.team2Name}</span>
+                                                                    <span class="team-score">{game.displayScore2}</span>
+                                                                </div>
+                                                                <template if:true={game.hasPrediction}>
+                                                                    <div class={game.modelBadgeClass} title={game.predictionTitle}>
+                                                                        <span class="badge-icon">{game.modelIcon}</span>
+                                                                        <span class="badge-conf">{game.confidenceDisplay}</span>
+                                                                    </div>
+                                                                </template>
+                                                                <template if:true={game.hasMultipleModels}>
+                                                                    <div class="model-count-badge" title="Predictions from multiple models">{game.modelCountDisplay}</div>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+
+                                        <div class="region-section">
+                                            <h2 class="region-title">South</h2>
+                                            <div class="region-rounds">
+                                                <template for:each={southRounds} for:item="round">
+                                                    <div key={round.name} class={round.className}>
+                                                        <template for:each={round.games} for:item="game">
+                                                            <div key={game.Id} class={game.selectedGameClass} onclick={handleGameClick} data-game-id={game.Id}>
+                                                                <div class={game.team1Class}>
+                                                                    <template lwc:if={game.team1Logo}><img src={game.team1Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                                    <span class="team-seed">{game.team1Seed}</span>
+                                                                    <span class="team-name" title={game.team1Name}>{game.team1Name}</span>
+                                                                    <span class="team-score">{game.displayScore1}</span>
+                                                                </div>
+                                                                <div class={game.team2Class}>
+                                                                    <template lwc:if={game.team2Logo}><img src={game.team2Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                                    <span class="team-seed">{game.team2Seed}</span>
+                                                                    <span class="team-name" title={game.team2Name}>{game.team2Name}</span>
+                                                                    <span class="team-score">{game.displayScore2}</span>
+                                                                </div>
+                                                                <template if:true={game.hasPrediction}>
+                                                                    <div class={game.modelBadgeClass} title={game.predictionTitle}>
+                                                                        <span class="badge-icon">{game.modelIcon}</span>
+                                                                        <span class="badge-conf">{game.confidenceDisplay}</span>
+                                                                    </div>
+                                                                </template>
+                                                                <template if:true={game.hasMultipleModels}>
+                                                                    <div class="model-count-badge" title="Predictions from multiple models">{game.modelCountDisplay}</div>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bracket-center">
+                                        <div class="final-four-section">
+                                            <h2 class="region-title center-title">Final Four</h2>
+                                            <div class="final-four-games">
+                                                <template for:each={finalFourGames} for:item="game">
+                                                    <div key={game.Id} class={game.selectedGameClass} onclick={handleGameClick} data-game-id={game.Id}>
+                                                        <div class={game.team1Class}>
+                                                            <template lwc:if={game.team1Logo}><img src={game.team1Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                            <span class="team-seed">{game.team1Seed}</span>
+                                                            <span class="team-name" title={game.team1Name}>{game.team1Name}</span>
+                                                            <span class="team-score">{game.displayScore1}</span>
+                                                        </div>
+                                                        <div class={game.team2Class}>
+                                                            <template lwc:if={game.team2Logo}><img src={game.team2Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                            <span class="team-seed">{game.team2Seed}</span>
+                                                            <span class="team-name" title={game.team2Name}>{game.team2Name}</span>
+                                                            <span class="team-score">{game.displayScore2}</span>
+                                                        </div>
+                                                        <template if:true={game.hasPrediction}>
+                                                            <div class={game.modelBadgeClass} title={game.predictionTitle}>
+                                                                <span class="badge-icon">{game.modelIcon}</span>
+                                                                <span class="badge-conf">{game.confidenceDisplay}</span>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+
+                                        <div class="championship-section">
+                                            <h2 class="region-title center-title championship-title">Championship</h2>
+                                            <template for:each={championshipGames} for:item="game">
+                                                <div key={game.Id} class={game.selectedGameClass} onclick={handleGameClick} data-game-id={game.Id}>
+                                                    <div class={game.team1Class}>
+                                                        <template lwc:if={game.team1Logo}><img src={game.team1Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                        <span class="team-seed">{game.team1Seed}</span>
+                                                        <span class="team-name" title={game.team1Name}>{game.team1Name}</span>
+                                                        <span class="team-score">{game.displayScore1}</span>
+                                                    </div>
+                                                    <div class={game.team2Class}>
+                                                        <template lwc:if={game.team2Logo}><img src={game.team2Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                        <span class="team-seed">{game.team2Seed}</span>
+                                                        <span class="team-name" title={game.team2Name}>{game.team2Name}</span>
+                                                        <span class="team-score">{game.displayScore2}</span>
+                                                    </div>
+                                                    <template if:true={game.hasPrediction}>
+                                                        <div class={game.modelBadgeClass} title={game.predictionTitle}>
+                                                            <span class="badge-icon">{game.modelIcon}</span>
+                                                            <span class="badge-conf">{game.confidenceDisplay}</span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="bracket-right">
+                                        <div class="region-section">
+                                            <h2 class="region-title">Midwest</h2>
+                                            <div class="region-rounds region-rounds-right">
+                                                <template for:each={midwestRounds} for:item="round">
+                                                    <div key={round.name} class={round.className}>
+                                                        <template for:each={round.games} for:item="game">
+                                                            <div key={game.Id} class={game.selectedGameClass} onclick={handleGameClick} data-game-id={game.Id}>
+                                                                <div class={game.team1Class}>
+                                                                    <template lwc:if={game.team1Logo}><img src={game.team1Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                                    <span class="team-seed">{game.team1Seed}</span>
+                                                                    <span class="team-name" title={game.team1Name}>{game.team1Name}</span>
+                                                                    <span class="team-score">{game.displayScore1}</span>
+                                                                </div>
+                                                                <div class={game.team2Class}>
+                                                                    <template lwc:if={game.team2Logo}><img src={game.team2Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                                    <span class="team-seed">{game.team2Seed}</span>
+                                                                    <span class="team-name" title={game.team2Name}>{game.team2Name}</span>
+                                                                    <span class="team-score">{game.displayScore2}</span>
+                                                                </div>
+                                                                <template if:true={game.hasPrediction}>
+                                                                    <div class={game.modelBadgeClass} title={game.predictionTitle}>
+                                                                        <span class="badge-icon">{game.modelIcon}</span>
+                                                                        <span class="badge-conf">{game.confidenceDisplay}</span>
+                                                                    </div>
+                                                                </template>
+                                                                <template if:true={game.hasMultipleModels}>
+                                                                    <div class="model-count-badge" title="Predictions from multiple models">{game.modelCountDisplay}</div>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+
+                                        <div class="region-section">
+                                            <h2 class="region-title">West</h2>
+                                            <div class="region-rounds region-rounds-right">
+                                                <template for:each={westRounds} for:item="round">
+                                                    <div key={round.name} class={round.className}>
+                                                        <template for:each={round.games} for:item="game">
+                                                            <div key={game.Id} class={game.selectedGameClass} onclick={handleGameClick} data-game-id={game.Id}>
+                                                                <div class={game.team1Class}>
+                                                                    <template lwc:if={game.team1Logo}><img src={game.team1Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                                    <span class="team-seed">{game.team1Seed}</span>
+                                                                    <span class="team-name" title={game.team1Name}>{game.team1Name}</span>
+                                                                    <span class="team-score">{game.displayScore1}</span>
+                                                                </div>
+                                                                <div class={game.team2Class}>
+                                                                    <template lwc:if={game.team2Logo}><img src={game.team2Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                                    <span class="team-seed">{game.team2Seed}</span>
+                                                                    <span class="team-name" title={game.team2Name}>{game.team2Name}</span>
+                                                                    <span class="team-score">{game.displayScore2}</span>
+                                                                </div>
+                                                                <template if:true={game.hasPrediction}>
+                                                                    <div class={game.modelBadgeClass} title={game.predictionTitle}>
+                                                                        <span class="badge-icon">{game.modelIcon}</span>
+                                                                        <span class="badge-conf">{game.confidenceDisplay}</span>
+                                                                    </div>
+                                                                </template>
+                                                                <template if:true={game.hasMultipleModels}>
+                                                                    <div class="model-count-badge" title="Predictions from multiple models">{game.modelCountDisplay}</div>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template if:false={showFullBracket}>
+                                <div class="round-view">
+                                    <h2 class="round-view-title">{selectedRoundLabel}</h2>
+                                    <div class="round-games-grid">
+                                        <template for:each={filteredGames} for:item="game">
+                                            <div key={game.Id} class={game.selectedGameClass} onclick={handleGameClick} data-game-id={game.Id}>
+                                                <div class="game-region-badge">{game.Region__c}</div>
+                                                <div class={game.team1Class}>
+                                                    <template lwc:if={game.team1Logo}><img src={game.team1Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                    <span class="team-seed">{game.team1Seed}</span>
+                                                    <span class="team-name" title={game.team1Name}>{game.team1Name}</span>
+                                                    <span class="team-score">{game.displayScore1}</span>
+                                                </div>
+                                                <div class={game.team2Class}>
+                                                    <template lwc:if={game.team2Logo}><img src={game.team2Logo} alt="" class="bracket-team-logo" loading="lazy"></template>
+                                                    <span class="team-seed">{game.team2Seed}</span>
+                                                    <span class="team-name" title={game.team2Name}>{game.team2Name}</span>
+                                                    <span class="team-score">{game.displayScore2}</span>
+                                                </div>
+                                                <template if:true={game.hasPrediction}>
+                                                    <div class={game.modelBadgeClass} title={game.predictionTitle}>
+                                                        <span class="badge-icon">{game.modelIcon}</span>
+                                                        <span class="badge-conf">{game.confidenceDisplay}</span>
+                                                    </div>
+                                                </template>
+                                                <template if:true={game.hasMultipleModels}>
+                                                    <div class="model-count-badge">{game.modelCountDisplay}</div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template if:true={hasNoGames}>
+                                <div class="slds-align_absolute-center slds-p-around_large empty-state">
+                                    <div class="slds-text-align_center">
+                                        <lightning-icon icon-name="utility:event" size="large" class="empty-icon"></lightning-icon>
+                                        <h3 class="slds-text-heading_medium slds-m-top_medium">No Games Found</h3>
+                                        <p class="slds-text-body_regular slds-m-top_small">No tournament games have been loaded yet.</p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Game Detail / Prediction Panel -->
+                    <template if:true={hasSelectedGame}>
+                        <div class="game-detail-panel">
+                            <div class="detail-header">
+                                <h3 class="detail-title">
+                                    {selectedGameDetail.team1Name} vs {selectedGameDetail.team2Name}
+                                </h3>
+                                <button class="detail-close" onclick={handleCloseDetail} title="Close">&#x2715;</button>
+                            </div>
+
+                            <div class="detail-matchup">
+                                <div class="detail-team">
+                                    <template lwc:if={selectedGameDetail.team1Logo}>
+                                        <img src={selectedGameDetail.team1Logo} alt="" class="detail-team-logo">
+                                    </template>
+                                    <span class="detail-seed">{selectedGameDetail.team1Seed}</span>
+                                    <span class="detail-team-name">{selectedGameDetail.team1Name}</span>
+                                </div>
+                                <span class="detail-vs">VS</span>
+                                <div class="detail-team">
+                                    <template lwc:if={selectedGameDetail.team2Logo}>
+                                        <img src={selectedGameDetail.team2Logo} alt="" class="detail-team-logo">
+                                    </template>
+                                    <span class="detail-seed">{selectedGameDetail.team2Seed}</span>
+                                    <span class="detail-team-name">{selectedGameDetail.team2Name}</span>
+                                </div>
+                            </div>
+
+                            <div class="detail-meta">
+                                <span class="meta-tag">{selectedGameDetail.Round__c}</span>
+                                <template lwc:if={selectedGameDetail.Region__c}>
+                                    <span class="meta-tag">{selectedGameDetail.Region__c}</span>
+                                </template>
+                            </div>
+
+                            <!-- Run Prediction Buttons -->
+                            <div class="prediction-actions">
+                                <lightning-button
+                                    label="Run All Models"
+                                    variant="brand"
+                                    icon-name="utility:multi_select_checkbox"
+                                    onclick={handleRunAllModels}
+                                    disabled={isRunningPrediction}
+                                    class="slds-m-bottom_x-small">
+                                </lightning-button>
+                                <div class="individual-model-buttons">
+                                    <button class="run-model-btn run-model-stat" data-model="Statistical" onclick={handleRunModel} disabled={isRunningPrediction}>
+                                        📊 Statistical
+                                    </button>
+                                    <button class="run-model-btn run-model-mascot" data-model="Mascot Battle" onclick={handleRunModel} disabled={isRunningPrediction}>
+                                        ⚔️ Mascot
+                                    </button>
+                                    <button class="run-model-btn run-model-ai" data-model="AI Research" onclick={handleRunModel} disabled={isRunningPrediction}>
+                                        🤖 AI Research
+                                    </button>
+                                </div>
+                                <template if:true={isRunningPrediction}>
+                                    <div class="prediction-spinner">
+                                        <lightning-spinner alternative-text="Running prediction" size="small"></lightning-spinner>
+                                        <span>Generating prediction...</span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Model Results -->
+                            <template if:true={selectedGameModels.length}>
+                                <div class="model-results">
+                                    <h4 class="model-results-title">Prediction Comparison</h4>
+                                    <template for:each={selectedGameModels} for:item="model">
+                                        <div key={model.key} class={model.badgeClass}>
+                                            <div class="model-result-header">
+                                                <span class="model-result-icon">{model.icon}</span>
+                                                <span class="model-result-type">{model.type}</span>
+                                                <span class="model-result-confidence">{model.confidence}%</span>
+                                            </div>
+                                            <div class="model-result-pick">
+                                                Pick: <strong>{model.winnerName}</strong>
+                                            </div>
+                                            <div class="model-result-probs">
+                                                <div class="prob-bar">
+                                                    <span class="prob-label">{model.t1Prob}%</span>
+                                                    <div class="prob-track">
+                                                        <div class="prob-fill" style={model.t1ProbStyle}></div>
+                                                    </div>
+                                                    <span class="prob-label">{model.t2Prob}%</span>
+                                                </div>
+                                            </div>
+                                            <template if:true={model.hasResult}>
+                                                <div class="model-result-verdict">
+                                                    <template if:true={model.isCorrect}>
+                                                        <span class="verdict-correct">&#x2713; Correct</span>
+                                                    </template>
+                                                    <template if:false={model.isCorrect}>
+                                                        <span class="verdict-wrong">&#x2717; Wrong</span>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <template if:true={model.rationale}>
+                                                <div class="model-rationale">
+                                                    <lightning-formatted-rich-text value={model.rationale}></lightning-formatted-rich-text>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </template>
+    </lightning-card>
+</template>

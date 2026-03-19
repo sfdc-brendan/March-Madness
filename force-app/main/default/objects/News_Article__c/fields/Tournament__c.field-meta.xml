@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tournament__c</fullName>
+    <label>Tournament</label>
+    <type>Lookup</type>
+    <referenceTo>Tournament__c</referenceTo>
+    <relationshipLabel>News Articles</relationshipLabel>
+    <relationshipName>News_Articles</relationshipName>
+    <required>false</required>
+    <deleteConstraint>SetNull</deleteConstraint>
+</CustomField>

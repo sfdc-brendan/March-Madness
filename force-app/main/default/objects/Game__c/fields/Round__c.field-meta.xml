@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Round__c</fullName>
+    <label>Round</label>
+    <type>Picklist</type>
+    <required>false</required>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Round of 64</fullName>
+                <default>false</default>
+                <label>Round of 64</label>
+            </value>
+            <value>
+                <fullName>Round of 32</fullName>
+                <default>false</default>
+                <label>Round of 32</label>
+            </value>
+            <value>
+                <fullName>Sweet 16</fullName>
+                <default>false</default>
+                <label>Sweet 16</label>
+            </value>
+            <value>
+                <fullName>Elite 8</fullName>
+                <default>false</default>
+                <label>Elite 8</label>
+            </value>
+            <value>
+                <fullName>Final Four</fullName>
+                <default>false</default>
+                <label>Final Four</label>
+            </value>
+            <value>
+                <fullName>Championship</fullName>
+                <default>false</default>
+                <label>Championship</label>
+            </value>
+            <value>
+                <fullName>Conference Quarterfinal</fullName>
+                <default>false</default>
+                <label>Conference Quarterfinal</label>
+            </value>
+            <value>
+                <fullName>Conference Semifinal</fullName>
+                <default>false</default>
+                <label>Conference Semifinal</label>
+            </value>
+            <value>
+                <fullName>Conference Final</fullName>
+                <default>false</default>
+                <label>Conference Final</label>
+            </value>
+            <value>
+                <fullName>First Four</fullName>
+                <default>false</default>
+                <label>First Four</label>
+            </value>
+            <value>
+                <fullName>Conference First Round</fullName>
+                <default>false</default>
+                <label>Conference First Round</label>
+            </value>
+            <value>
+                <fullName>Conference Second Round</fullName>
+                <default>false</default>
+                <label>Conference Second Round</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

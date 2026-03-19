@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Endpoint_Base__c</fullName>
+    <label>Endpoint Base URL</label>
+    <type>Url</type>
+    <required>false</required>
+    <defaultValue>&apos;https://generativelanguage.googleapis.com&apos;</defaultValue>
+    <description>Base URL for the Gemini API</description>
+</CustomField>

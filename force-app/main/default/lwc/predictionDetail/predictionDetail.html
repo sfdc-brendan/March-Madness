@@ -1,0 +1,111 @@
+<template>
+    <template if:true={hasData}>
+        <!-- Header Strip -->
+        <div class="pred-header">
+            <div class="pred-header-left">
+                <span class={modelBadgeClass}>
+                    <span class="model-icon">{modelIcon}</span>
+                    <span>{modelType}</span>
+                </span>
+                <span class={currentBadge}>{currentLabel}</span>
+            </div>
+            <div class="pred-header-right">
+                <template if:true={round}>
+                    <span class="meta-pill">{round}</span>
+                </template>
+                <template if:true={region}>
+                    <span class="meta-pill">{region}</span>
+                </template>
+            </div>
+        </div>
+
+        <!-- Matchup -->
+        <div class="matchup-container">
+            <div class={team1Class}>
+                <template if:true={hasTeam1Logo}>
+                    <img src={team1Logo} alt={team1Name} class="team-logo">
+                </template>
+                <div class="team-info">
+                    <span class="team-seed-label">{team1SeedDisplay}</span>
+                    <span class="team-name-label">{team1Name}</span>
+                </div>
+                <span class="team-prob">{team1ProbDisplay}</span>
+            </div>
+
+            <div class="matchup-center">
+                <div class="confidence-ring" style={confidenceGaugeStyle}>
+                    <span class="confidence-value">{confidenceDisplay}</span>
+                </div>
+                <span class={confidenceLevelClass}>{confidenceLevel}</span>
+            </div>
+
+            <div class={team2Class}>
+                <template if:true={hasTeam2Logo}>
+                    <img src={team2Logo} alt={team2Name} class="team-logo">
+                </template>
+                <div class="team-info">
+                    <span class="team-seed-label">{team2SeedDisplay}</span>
+                    <span class="team-name-label">{team2Name}</span>
+                </div>
+                <span class="team-prob">{team2ProbDisplay}</span>
+            </div>
+        </div>
+
+        <!-- Probability Bar -->
+        <div class="prob-bar-section">
+            <div class="prob-bar-track">
+                <div class="prob-bar-fill left" style={team1BarStyle}></div>
+                <div class="prob-bar-fill right" style={team2BarStyle}></div>
+            </div>
+            <div class="prob-bar-labels">
+                <span>{team1Name}</span>
+                <span>{team2Name}</span>
+            </div>
+        </div>
+
+        <!-- Winner Prediction -->
+        <div class="winner-section">
+            <span class="winner-label">Predicted Winner</span>
+            <span class="winner-name">{predictedWinner}</span>
+        </div>
+
+        <!-- Verdict (if game complete) -->
+        <template if:true={showVerdict}>
+            <div class={verdictClass}>
+                <span class="verdict-icon">{verdictIcon}</span>
+                <div class="verdict-info">
+                    <span class="verdict-label">{verdictLabel}</span>
+                    <span class="verdict-score">Final: {scoreDisplay}</span>
+                    <span class="verdict-winner">Winner: {actualWinner}</span>
+                </div>
+            </div>
+        </template>
+
+        <!-- Rationale -->
+        <template if:true={hasRationale}>
+            <div class="rationale-section">
+                <h3 class="rationale-title">Analysis &amp; Rationale</h3>
+                <div class="rationale-body">
+                    <lightning-formatted-rich-text value={rationale}></lightning-formatted-rich-text>
+                </div>
+            </div>
+        </template>
+
+        <!-- Metadata Footer -->
+        <div class="pred-footer">
+            <span class="footer-item">Version: {modelVersion}</span>
+            <template if:true={predictionDate}>
+                <span class="footer-item">
+                    Generated: <lightning-formatted-date-time value={predictionDate} year="numeric" month="short" day="2-digit" hour="2-digit" minute="2-digit"></lightning-formatted-date-time>
+                </span>
+            </template>
+        </div>
+    </template>
+
+    <template if:true={error}>
+        <div class="error-container">
+            <lightning-icon icon-name="utility:error" size="small"></lightning-icon>
+            <span>Unable to load prediction details.</span>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,193 @@
+<template>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <lightning-icon icon-name="custom:custom55" size="medium"></lightning-icon>
+                    <div class="header-title">
+                        <h1>March Madness Prediction Engine</h1>
+                        <template lwc:if={hasTournament}>
+                            <p class="header-subtitle">
+                                {tournamentYear} NCAA Tournament
+                                <span class={statusBadgeClass}>{tournamentStatus}</span>
+                            </p>
+                        </template>
+                    </div>
+                </div>
+                <div class="header-stats" lwc:if={hasTournament}>
+                    <div class="header-stat">
+                        <span class="stat-value">{totalPredictions}</span>
+                        <span class="stat-label">Predictions</span>
+                    </div>
+                    <div class="header-stat">
+                        <span class="stat-value">{predictionAccuracy}%</span>
+                        <span class="stat-label">Accuracy</span>
+                    </div>
+                    <div class="header-stat">
+                        <span class="stat-value">{upcomingGames}</span>
+                        <span class="stat-label">Upcoming</span>
+                    </div>
+                    <div class="header-stat">
+                        <span class="stat-value">{avgConfidence}%</span>
+                        <span class="stat-label">Avg Confidence</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                <p class="loading-text">Loading March Madness data...</p>
+            </div>
+        </template>
+
+        <!-- No Tournament State -->
+        <template lwc:if={showEmptyState}>
+            <div class="empty-state">
+                <lightning-icon icon-name="custom:custom55" size="large"></lightning-icon>
+                <h2>Welcome to March Madness Prediction Engine</h2>
+                <p>No active tournament found. To get started:</p>
+                <ol class="setup-steps">
+                    <li>Create a <strong>Tournament</strong> record with Status = "Active" and the current Year</li>
+                    <li>Run the ESPN data ingestion to pull in teams and bracket data</li>
+                    <li>The prediction engine will analyze matchups automatically</li>
+                </ol>
+                <template lwc:if={error}>
+                    <p class="error-detail">{error}</p>
+                </template>
+            </div>
+        </template>
+
+        <!-- Main Content -->
+        <template lwc:if={hasTournament}>
+            <!-- Tab Navigation -->
+            <nav class="tab-nav">
+                <button class={dashboardTabClass} data-tab="dashboard" onclick={handleTabClick}>
+                    <lightning-icon icon-name="utility:chart" size="x-small"></lightning-icon>
+                    <span>Dashboard</span>
+                </button>
+                <button class={conferencesTabClass} data-tab="conferences" onclick={handleTabClick}>
+                    <lightning-icon icon-name="utility:world" size="x-small"></lightning-icon>
+                    <span>Conf. Tourneys</span>
+                </button>
+                <button class={bracketTabClass} data-tab="bracket" onclick={handleTabClick}>
+                    <lightning-icon icon-name="utility:hierarchy" size="x-small"></lightning-icon>
+                    <span>Bracket</span>
+                </button>
+                <button class={scenariosTabClass} data-tab="scenarios" onclick={handleTabClick}>
+                    <lightning-icon icon-name="utility:strategy" size="x-small"></lightning-icon>
+                    <span>Scenarios</span>
+                </button>
+                <button class={teamsTabClass} data-tab="teams" onclick={handleTabClick}>
+                    <lightning-icon icon-name="utility:people" size="x-small"></lightning-icon>
+                    <span>Teams</span>
+                </button>
+                <button class={newsTabClass} data-tab="news" onclick={handleTabClick}>
+                    <lightning-icon icon-name="utility:news" size="x-small"></lightning-icon>
+                    <span>News</span>
+                </button>
+            </nav>
+
+            <!-- Dashboard Tab -->
+            <div class="tab-content" lwc:if={isDashboardTab}>
+                <div class="dashboard-layout">
+                    <div class="dashboard-main">
+                        <c-prediction-dashboard tournament-id={tournamentId}></c-prediction-dashboard>
+                    </div>
+                    <div class="dashboard-sidebar">
+                        <c-march-madness-news-feed limit-count="10"></c-march-madness-news-feed>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conference Tournaments Tab -->
+            <div class="tab-content" lwc:if={isConferencesTab}>
+                <c-conference-tournaments tournament-id={tournamentId}></c-conference-tournaments>
+            </div>
+
+            <!-- Bracket Tab -->
+            <div class="tab-content" lwc:if={isBracketTab}>
+                <c-march-madness-bracket
+                    tournament-id={tournamentId}
+                    ongameselect={handleGameSelect}>
+                </c-march-madness-bracket>
+                <template lwc:if={hasSelectedGame}>
+                    <div class="comparison-panel">
+                        <c-team-comparison-card
+                            game-id={selectedGameId}
+                            tournament-id={tournamentId}
+                            onpredictioncomplete={handlePredictionComplete}>
+                        </c-team-comparison-card>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Scenarios Tab -->
+            <div class="tab-content" lwc:if={isScenariosTab}>
+                <c-bracket-scenarios tournament-id={tournamentId}></c-bracket-scenarios>
+            </div>
+
+            <!-- Teams Tab -->
+            <div class="tab-content" lwc:if={isTeamsTab}>
+                <div class="teams-layout">
+                    <div class="teams-sidebar">
+                        <lightning-card title="Teams" icon-name="utility:people">
+                            <div slot="actions">
+                                <lightning-input
+                                    type="search"
+                                    placeholder="Search teams..."
+                                    onchange={handleTeamSearch}
+                                    variant="label-hidden">
+                                </lightning-input>
+                            </div>
+                            <div class="team-list">
+                                <template for:each={filteredTeams} for:item="team">
+                                    <div key={team.Id}
+                                         class={team.itemClass}
+                                         data-team-id={team.Id}
+                                         onclick={handleTeamSelect}
+                                         lwc:if={team.visible}>
+                                        <div class="team-list-info">
+                                            <template lwc:if={team.hasLogo}>
+                                                <img src={team.Logo_URL__c} alt={team.Name} class="team-logo-sm" loading="lazy">
+                                            </template>
+                                            <template lwc:else>
+                                                <span class="team-logo-placeholder" style={team.placeholderStyle}>{team.initials}</span>
+                                            </template>
+                                            <span class="team-seed">{team.seedDisplay}</span>
+                                            <span class="team-name">{team.Name}</span>
+                                        </div>
+                                        <div class="team-list-meta">
+                                            <span class="team-record">{team.record}</span>
+                                            <span class="team-conference">{team.Conference__c}</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </lightning-card>
+                    </div>
+                    <div class="teams-main">
+                        <template lwc:if={hasSelectedTeam}>
+                            <c-team-research-panel team-id={selectedTeamId}></c-team-research-panel>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-state small">
+                                <lightning-icon icon-name="utility:touch_action" size="large"></lightning-icon>
+                                <h2>Select a Team</h2>
+                                <p>Click a team from the list to view their research and intelligence.</p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Tab -->
+            <div class="tab-content" lwc:if={isNewsTab}>
+                <c-march-madness-news-feed limit-count="50"></c-march-madness-news-feed>
+            </div>
+        </template>
+    </div>
+</template>

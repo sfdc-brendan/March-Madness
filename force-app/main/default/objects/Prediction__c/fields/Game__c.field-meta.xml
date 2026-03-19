@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Game__c</fullName>
+    <label>Game</label>
+    <type>Lookup</type>
+    <referenceTo>Game__c</referenceTo>
+    <relationshipLabel>Predictions</relationshipLabel>
+    <relationshipName>Predictions</relationshipName>
+    <required>false</required>
+    <deleteConstraint>SetNull</deleteConstraint>
+</CustomField>

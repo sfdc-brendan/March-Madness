@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Parent_Tournament__c</fullName>
+    <label>Parent Tournament</label>
+    <description>Links conference tournaments to their parent NCAA tournament</description>
+    <type>Lookup</type>
+    <referenceTo>Tournament__c</referenceTo>
+    <relationshipLabel>Conference Tournaments</relationshipLabel>
+    <relationshipName>Conference_Tournaments</relationshipName>
+    <required>false</required>
+</CustomField>

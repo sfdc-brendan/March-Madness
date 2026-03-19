@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Betting_Line_Updated__c</fullName>
+    <label>Betting Line Updated</label>
+    <description>When the betting lines were last updated</description>
+    <type>DateTime</type>
+    <required>false</required>
+</CustomField>

@@ -1,0 +1,157 @@
+<template>
+    <lightning-card title="Team Matchup Comparison" icon-name="standard:performance">
+        <template if:true={isLoading}>
+            <div class="slds-align_absolute-center loading-container">
+                <lightning-spinner alternative-text="Loading matchup" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <template if:true={hasGame}>
+                <div class="comparison-container slds-p-around_medium">
+                    <!-- Team Headers -->
+                    <div class="team-headers">
+                        <div class="team-header team-left">
+                            <template lwc:if={team1Logo}>
+                                <img src={team1Logo} alt={team1Name} class="team-header-logo">
+                            </template>
+                            <span class="team-seed-badge">{team1Seed}</span>
+                            <h2 class="team-display-name">{team1Name}</h2>
+                            <span class="team-record">{team1Record}</span>
+                        </div>
+                        <div class="vs-divider">
+                            <span class="vs-text">VS</span>
+                            <span class="game-round">{gameRound}</span>
+                        </div>
+                        <div class="team-header team-right">
+                            <template lwc:if={team2Logo}>
+                                <img src={team2Logo} alt={team2Name} class="team-header-logo">
+                            </template>
+                            <span class="team-seed-badge">{team2Seed}</span>
+                            <h2 class="team-display-name">{team2Name}</h2>
+                            <span class="team-record">{team2Record}</span>
+                        </div>
+                    </div>
+
+                    <!-- Stats Comparison -->
+                    <div class="stats-section">
+                        <template for:each={comparisonStats} for:item="stat">
+                            <div key={stat.name} class="stat-row">
+                                <div class="stat-value-left">
+                                    <span class={stat.team1ValueClass}>{stat.team1Display}</span>
+                                </div>
+                                <div class="stat-bar-section">
+                                    <div class="stat-bar-container">
+                                        <div class="stat-bar-left" style={stat.team1BarStyle}></div>
+                                        <div class="stat-bar-right" style={stat.team2BarStyle}></div>
+                                    </div>
+                                    <span class="stat-name">{stat.name}</span>
+                                </div>
+                                <div class="stat-value-right">
+                                    <span class={stat.team2ValueClass}>{stat.team2Display}</span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Betting Lines -->
+                    <template if:true={hasBettingLines}>
+                        <div class="betting-section">
+                            <h3 class="section-label">
+                                <lightning-icon icon-name="utility:money" size="xx-small"></lightning-icon>
+                                Betting Lines
+                            </h3>
+                            <div class="betting-grid">
+                                <template if:true={hasSpread}>
+                                    <div class="betting-item">
+                                        <span class="betting-label">Spread</span>
+                                        <span class="betting-value">{spreadDisplay}</span>
+                                    </div>
+                                </template>
+                                <template if:true={hasOverUnder}>
+                                    <div class="betting-item">
+                                        <span class="betting-label">O/U</span>
+                                        <span class="betting-value">{overUnderDisplay}</span>
+                                    </div>
+                                </template>
+                                <template if:true={hasMoneylines}>
+                                    <div class="betting-item">
+                                        <span class="betting-label">{team1Name}</span>
+                                        <span class="betting-value">{team1MoneylineDisplay}</span>
+                                    </div>
+                                    <div class="betting-item">
+                                        <span class="betting-label">{team2Name}</span>
+                                        <span class="betting-value">{team2MoneylineDisplay}</span>
+                                    </div>
+                                </template>
+                            </div>
+                            <template if:true={bettingSource}>
+                                <span class="betting-source">Source: {bettingSource}</span>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Historical Seed Insight -->
+                    <template if:true={hasSeeds}>
+                        <div class="seed-insight">
+                            <lightning-icon icon-name="utility:knowledge_base" size="xx-small" class="insight-icon"></lightning-icon>
+                            <span class="insight-text">{seedInsight}</span>
+                        </div>
+                    </template>
+
+                    <!-- Prediction Section -->
+                    <div class="prediction-section">
+                        <template if:true={hasPrediction}>
+                            <div class="prediction-result">
+                                <div class="prediction-header">
+                                    <lightning-icon icon-name="utility:magicwand" size="small" class="prediction-icon"></lightning-icon>
+                                    <h3 class="prediction-title">AI Prediction</h3>
+                                </div>
+                                <div class="prediction-body">
+                                    <div class="win-probability">
+                                        <div class="prob-ring" style={probRingStyle}>
+                                            <span class="prob-value">{confidenceDisplay}</span>
+                                        </div>
+                                    </div>
+                                    <div class="prediction-details">
+                                        <span class="predicted-winner-name">{predictedWinnerName}</span>
+                                        <span class="prediction-label">predicted to win</span>
+                                        <template if:true={hasRationale}>
+                                            <p class="prediction-rationale">{gameData.Rationale__c}</p>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template if:false={hasPrediction}>
+                            <div class="no-prediction slds-text-align_center">
+                                <p class="slds-text-body_regular slds-m-bottom_small">No prediction yet for this matchup</p>
+                            </div>
+                        </template>
+
+                        <div class="slds-text-align_center slds-m-top_small">
+                            <lightning-button
+                                label={predictButtonLabel}
+                                variant="brand"
+                                icon-name="utility:magicwand"
+                                onclick={handlePredict}
+                                disabled={isPredicting}>
+                            </lightning-button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template if:false={hasGame}>
+                <div class="slds-align_absolute-center empty-state">
+                    <div class="slds-text-align_center">
+                        <lightning-icon icon-name="utility:groups" size="large" class="empty-icon"></lightning-icon>
+                        <h3 class="slds-text-heading_medium slds-m-top_medium">No Matchup Selected</h3>
+                        <p class="slds-text-body_regular slds-m-top_small">Select a game from the bracket to view the matchup comparison.</p>
+                    </div>
+                </div>
+            </template>
+        </template>
+    </lightning-card>
+</template>

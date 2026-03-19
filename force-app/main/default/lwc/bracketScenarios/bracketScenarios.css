@@ -1,0 +1,625 @@
+/* Container */
+.scenarios-container {
+    padding: 0;
+}
+
+/* Header */
+.scenarios-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 12px 12px 0 0;
+    margin-bottom: 20px;
+}
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.section-title {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+.scenario-count {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+}
+.back-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+.back-btn:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+/* Generate Label */
+:host {
+    --generate-label: 'Generate All Scenarios';
+}
+
+/* Generating Overlay */
+.generating-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 60px 20px;
+}
+.generating-text {
+    color: #666;
+    font-size: 15px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+.empty-state h3 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: #1a1a2e;
+}
+.empty-state p {
+    color: #666;
+    max-width: 500px;
+    margin: 0 auto 20px;
+    line-height: 1.5;
+}
+
+/* Insights Panel */
+.insights-panel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.insight-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.insight-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 12px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Champion bars */
+.champ-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.champ-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 140px;
+}
+.champ-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+.champ-seed {
+    font-size: 11px;
+    color: #666;
+    font-weight: 600;
+}
+.champ-name {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.champ-bar-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.champ-bar {
+    height: 20px;
+    background: linear-gradient(90deg, #e63946, #ff6b6b);
+    border-radius: 4px;
+    min-width: 4px;
+    transition: width 0.3s;
+}
+.champ-pct {
+    font-size: 12px;
+    font-weight: 700;
+    color: #333;
+    min-width: 30px;
+}
+
+/* Final Four bars */
+.ff-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.ff-name {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ff-bar-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.ff-bar {
+    height: 16px;
+    background: linear-gradient(90deg, #457b9d, #a8dadc);
+    border-radius: 4px;
+    min-width: 4px;
+}
+.ff-pct {
+    font-size: 11px;
+    font-weight: 700;
+    color: #666;
+}
+
+/* Upset list */
+.upset-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.upset-row:last-child {
+    border-bottom: none;
+}
+.upset-display {
+    font-size: 12px;
+    font-weight: 500;
+}
+.upset-freq {
+    font-size: 11px;
+    color: #e63946;
+    font-weight: 700;
+}
+
+/* Scenario Grid */
+.scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+/* Scenario Card */
+.scenario-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.scenario-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.card-icon {
+    font-size: 24px;
+}
+.card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+}
+.card-description {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+    margin: 0 0 12px 0;
+}
+
+/* Champion section */
+.card-champion {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+.champion-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #999;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.champion-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.champion-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+.champion-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+.champion-meta {
+    font-size: 11px;
+    color: #666;
+}
+.runner-up {
+    font-size: 12px;
+    color: #888;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Card stats */
+.card-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+.card-stat {
+    display: flex;
+    flex-direction: column;
+}
+.card-stat .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+.card-stat .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #999;
+    letter-spacing: 0.5px;
+}
+
+/* Biggest upset */
+.biggest-upset {
+    font-size: 11px;
+    margin-bottom: 12px;
+}
+.upset-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 6px;
+}
+.upset-low {
+    background: #d4edda;
+    color: #155724;
+}
+.upset-medium {
+    background: #fff3cd;
+    color: #856404;
+}
+.upset-high {
+    background: #f8d7da;
+    color: #721c24;
+}
+.upset-text {
+    color: #555;
+}
+
+/* Card footer */
+.card-footer {
+    text-align: right;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+}
+.view-bracket {
+    font-size: 12px;
+    color: #457b9d;
+    font-weight: 600;
+}
+
+/* ---- BRACKET DETAIL VIEW ---- */
+.bracket-detail {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Summary */
+.detail-summary {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 24px;
+    border-bottom: 1px solid #dee2e6;
+}
+.detail-champion-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 20px;
+}
+.detail-champion {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.detail-champ-logo {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+}
+.detail-champ-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #999;
+    font-weight: 700;
+}
+.detail-champ-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+.detail-champ-meta {
+    font-size: 12px;
+    color: #666;
+}
+.detail-vs {
+    font-size: 14px;
+    color: #999;
+    font-style: italic;
+}
+
+/* Detail stats */
+.detail-stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 20px;
+}
+.detail-stat {
+    text-align: center;
+}
+.ds-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+.ds-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #999;
+    letter-spacing: 0.5px;
+}
+
+/* Final Four detail */
+.detail-final-four h4,
+.detail-upsets h4 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #666;
+    margin: 0 0 10px 0;
+}
+.ff-teams {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.ff-team {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+.ff-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+.ff-seed {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e63946;
+}
+.ff-team-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+.ff-region {
+    font-size: 11px;
+    color: #999;
+}
+
+/* Upsets */
+.detail-upsets {
+    margin-top: 16px;
+}
+.upset-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.upset-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.upset-round {
+    font-size: 10px;
+    color: #856404;
+    font-weight: 700;
+}
+
+/* Rounds Section */
+.rounds-section {
+    padding: 20px;
+}
+.rounds-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.rounds-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+.round-filter {
+    width: 200px;
+}
+
+/* Round sections */
+.round-section {
+    margin-bottom: 24px;
+}
+.round-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e63946;
+}
+.game-count {
+    font-size: 12px;
+    font-weight: 400;
+    color: #999;
+}
+.region-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #457b9d;
+    margin: 0 0 8px 0;
+}
+
+/* Game cards */
+.region-games {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.game-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px 12px;
+    border-left: 3px solid #dee2e6;
+}
+.bracket-team {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    font-size: 13px;
+}
+.bracket-team.winner {
+    font-weight: 700;
+    color: #155724;
+}
+.bracket-team.loser {
+    color: #999;
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+.game-team-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+.game-team-name {
+    flex: 1;
+}
+.winner-check {
+    color: #28a745;
+    font-weight: 700;
+}
+.game-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid #e9ecef;
+}
+.game-confidence {
+    font-size: 11px;
+    color: #666;
+}
+.game-upset-badge {
+    font-size: 9px;
+    font-weight: 700;
+    background: #e63946;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .insights-panel {
+        grid-template-columns: 1fr;
+    }
+    .scenario-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    .detail-champion-section {
+        flex-direction: column;
+        gap: 12px;
+    }
+}

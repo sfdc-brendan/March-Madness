@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last_10_Record__c</fullName>
+    <label>Last 10 Record</label>
+    <description>W-L in last 10 games e.g. 8-2</description>
+    <type>Text</type>
+    <length>10</length>
+    <required>false</required>
+    <unique>false</unique>
+    <externalId>false</externalId>
+</CustomField>

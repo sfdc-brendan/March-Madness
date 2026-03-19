@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Verified__c</fullName>
+    <label>Verified Source</label>
+    <description>Whether this article comes from a verified real-world source (ESPN, Google Search grounded) vs AI-generated</description>
+    <type>Checkbox</type>
+    <defaultValue>false</defaultValue>
+</CustomField>

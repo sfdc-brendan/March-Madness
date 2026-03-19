@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Default_Model__c</fullName>
+    <label>Default Model</label>
+    <type>Text</type>
+    <length>100</length>
+    <required>false</required>
+    <defaultValue>&apos;gemini-2.0-flash&apos;</defaultValue>
+    <description>Default Gemini model to use for API calls</description>
+</CustomField>

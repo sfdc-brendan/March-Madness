@@ -1,0 +1,302 @@
+<template>
+    <div class="scenarios-container">
+        <!-- Header -->
+        <div class="scenarios-header">
+            <div class="header-left">
+                <template lwc:if={showBracketDetail}>
+                    <button class="back-btn" onclick={handleBackToGrid}>
+                        &larr; All Scenarios
+                    </button>
+                </template>
+                <h2 class="section-title">
+                    <template lwc:if={showBracketDetail}>
+                        {selectedScenario.icon} {selectedScenario.Scenario_Name__c}
+                    </template>
+                    <template lwc:else>
+                        Bracket Scenarios
+                    </template>
+                </h2>
+                <template lwc:if={hasScenarios}>
+                    <span class="scenario-count" lwc:if={showGrid}>{scenarioCount} brackets generated</span>
+                </template>
+            </div>
+            <div class="header-actions">
+                <lightning-button
+                    label={generateLabel}
+                    variant="brand"
+                    icon-name="utility:refresh"
+                    onclick={handleGenerate}
+                    disabled={isGenerating}>
+                </lightning-button>
+            </div>
+        </div>
+
+        <!-- Generating Spinner -->
+        <template lwc:if={isGenerating}>
+            <div class="generating-overlay">
+                <lightning-spinner alternative-text="Generating brackets" size="large"></lightning-spinner>
+                <p class="generating-text">Simulating 15 bracket scenarios across 12 strategies...</p>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template lwc:if={showEmptyState}>
+            <div class="empty-state">
+                <div class="empty-icon">🏀</div>
+                <h3>No Bracket Scenarios Yet</h3>
+                <p>Generate 15 filled-out brackets using different prediction strategies including statistical models, upset scenarios, historical trends, and more.</p>
+                <lightning-button
+                    label="Generate All Scenarios"
+                    variant="brand"
+                    icon-name="utility:play"
+                    onclick={handleGenerate}
+                    disabled={isGenerating}>
+                </lightning-button>
+            </div>
+        </template>
+
+        <!-- Grid View -->
+        <template lwc:if={showGrid}>
+            <!-- Insights Panel -->
+            <template lwc:if={hasScenarios}>
+                <div class="insights-panel">
+                    <!-- Champion Frequency -->
+                    <div class="insight-card" lwc:if={hasChampionSummary}>
+                        <h3 class="insight-title">Most Likely Champions</h3>
+                        <div class="champion-bars">
+                            <template for:each={championSummary} for:item="champ">
+                                <div key={champ.name} class="champ-row">
+                                    <div class="champ-info">
+                                        <template lwc:if={champ.logo}>
+                                            <img src={champ.logo} alt="" class="champ-logo">
+                                        </template>
+                                        <span class="champ-seed">{champ.seed}</span>
+                                        <span class="champ-name">{champ.name}</span>
+                                    </div>
+                                    <div class="champ-bar-container">
+                                        <div class="champ-bar" style={champ.barStyle}></div>
+                                        <span class="champ-pct">{champ.pct}%</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Final Four Frequency -->
+                    <div class="insight-card" lwc:if={hasFinalFourSummary}>
+                        <h3 class="insight-title">Final Four Frequency</h3>
+                        <div class="ff-bars">
+                            <template for:each={finalFourSummary} for:item="team">
+                                <div key={team.name} class="ff-row">
+                                    <span class="ff-name">{team.name}</span>
+                                    <div class="ff-bar-container">
+                                        <div class="ff-bar" style={team.barStyle}></div>
+                                        <span class="ff-pct">{team.pct}%</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Common Upsets -->
+                    <div class="insight-card" lwc:if={hasCommonUpsets}>
+                        <h3 class="insight-title">Most Predicted Upsets</h3>
+                        <div class="upset-list">
+                            <template for:each={commonUpsets} for:item="upset">
+                                <div key={upset.key} class="upset-row">
+                                    <span class="upset-display">{upset.display}</span>
+                                    <span class="upset-freq">{upset.frequency} ({upset.pct}%)</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario Cards -->
+                <div class="scenario-grid">
+                    <template for:each={scenarios} for:item="scenario">
+                        <div key={scenario.Id}
+                             class="scenario-card"
+                             style={scenario.cardStyle}
+                             data-scenario-id={scenario.Id}
+                             onclick={handleScenarioClick}>
+                            <div class="card-header">
+                                <span class="card-icon">{scenario.icon}</span>
+                                <h3 class="card-title">{scenario.Scenario_Name__c}</h3>
+                            </div>
+                            <p class="card-description">{scenario.Description__c}</p>
+
+                            <div class="card-champion" lwc:if={scenario.hasChampion}>
+                                <div class="champion-label">Champion</div>
+                                <div class="champion-info">
+                                    <template lwc:if={scenario.champLogo}>
+                                        <img src={scenario.champLogo} alt="" class="champion-logo">
+                                    </template>
+                                    <div class="champion-text">
+                                        <span class="champion-name">{scenario.champName}</span>
+                                        <span class="champion-meta">{scenario.champSeed} seed &bull; {scenario.champRegion}</span>
+                                    </div>
+                                </div>
+                                <div class="runner-up">
+                                    vs {scenario.runnerSeed} {scenario.runnerName}
+                                </div>
+                            </div>
+
+                            <div class="card-stats">
+                                <div class="card-stat">
+                                    <span class="stat-value">{scenario.Total_Upsets__c}</span>
+                                    <span class="stat-label">Upsets</span>
+                                </div>
+                                <div class="card-stat">
+                                    <span class="stat-value">{scenario.confidenceDisplay}</span>
+                                    <span class="stat-label">Avg Confidence</span>
+                                </div>
+                            </div>
+
+                            <template lwc:if={scenario.Biggest_Upset__c}>
+                                <div class="biggest-upset">
+                                    <span class={scenario.upsetBadgeClass}>Biggest Upset</span>
+                                    <span class="upset-text">{scenario.Biggest_Upset__c}</span>
+                                </div>
+                            </template>
+
+                            <div class="card-footer">
+                                <span class="view-bracket">View Full Bracket &rarr;</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </template>
+
+        <!-- Bracket Detail View -->
+        <template lwc:if={showBracketDetail}>
+            <div class="bracket-detail">
+                <!-- Scenario Summary -->
+                <div class="detail-summary">
+                    <div class="detail-champion-section">
+                        <div class="detail-champion">
+                            <template lwc:if={selectedScenario.champLogo}>
+                                <img src={selectedScenario.champLogo} alt="" class="detail-champ-logo">
+                            </template>
+                            <div>
+                                <div class="detail-champ-label">Champion</div>
+                                <div class="detail-champ-name">{selectedScenario.champName}</div>
+                                <div class="detail-champ-meta">{selectedScenario.champSeed} seed</div>
+                            </div>
+                        </div>
+                        <div class="detail-vs">defeated</div>
+                        <div class="detail-champion">
+                            <template lwc:if={selectedScenario.runnerLogo}>
+                                <img src={selectedScenario.runnerLogo} alt="" class="detail-champ-logo">
+                            </template>
+                            <div>
+                                <div class="detail-champ-label">Runner-Up</div>
+                                <div class="detail-champ-name">{selectedScenario.runnerName}</div>
+                                <div class="detail-champ-meta">{selectedScenario.runnerSeed} seed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-stats-row">
+                        <div class="detail-stat">
+                            <span class="ds-value">{selectedScenario.Total_Upsets__c}</span>
+                            <span class="ds-label">Total Upsets</span>
+                        </div>
+                        <div class="detail-stat">
+                            <span class="ds-value">{selectedScenario.confidenceDisplay}</span>
+                            <span class="ds-label">Avg Confidence</span>
+                        </div>
+                    </div>
+
+                    <!-- Final Four -->
+                    <div class="detail-final-four">
+                        <h4>Final Four</h4>
+                        <div class="ff-teams">
+                            <template for:each={selectedFinalFour} for:item="team">
+                                <div key={team.key} class="ff-team">
+                                    <template lwc:if={team.hasLogo}>
+                                        <img src={team.logo} alt="" class="ff-logo">
+                                    </template>
+                                    <span class="ff-seed">{team.seedDisplay}</span>
+                                    <span class="ff-team-name">{team.name}</span>
+                                    <span class="ff-region">{team.region}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Upsets -->
+                    <template lwc:if={hasSelectedUpsets}>
+                        <div class="detail-upsets">
+                            <h4>Upsets ({selectedScenario.Total_Upsets__c})</h4>
+                            <div class="upset-chips">
+                                <template for:each={selectedUpsets} for:item="upset">
+                                    <span key={upset.key} class="upset-chip">
+                                        {upset.display}
+                                        <span class="upset-round">{upset.roundDisplay}</span>
+                                    </span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Round-by-round breakdown -->
+                <div class="rounds-section">
+                    <div class="rounds-header">
+                        <h3>Round-by-Round Bracket</h3>
+                        <lightning-combobox
+                            value={selectedRound}
+                            options={roundFilterOptions}
+                            onchange={handleRoundFilter}
+                            variant="label-hidden"
+                            class="round-filter">
+                        </lightning-combobox>
+                    </div>
+
+                    <template for:each={selectedBracketRounds} for:item="round">
+                        <div key={round.key} class="round-section">
+                            <h4 class="round-title">{round.name} <span class="game-count">({round.gameCount} games)</span></h4>
+                            <template for:each={round.regionGroups} for:item="regionGroup">
+                                <div key={regionGroup.key} class="region-group">
+                                    <h5 class="region-label">{regionGroup.region}</h5>
+                                    <div class="region-games">
+                                        <template for:each={regionGroup.games} for:item="game">
+                                            <div key={game.key} class="game-card">
+                                                <div class={game.team1Class}>
+                                                    <template lwc:if={game.team1Logo}>
+                                                        <img src={game.team1Logo} alt="" class="game-team-logo">
+                                                    </template>
+                                                    <span class="game-team-name">{game.team1Display}</span>
+                                                    <template lwc:if={game.team1IsWinner}>
+                                                        <span class="winner-check">&#10003;</span>
+                                                    </template>
+                                                </div>
+                                                <div class={game.team2Class}>
+                                                    <template lwc:if={game.team2Logo}>
+                                                        <img src={game.team2Logo} alt="" class="game-team-logo">
+                                                    </template>
+                                                    <span class="game-team-name">{game.team2Display}</span>
+                                                    <template lwc:if={game.team2IsWinner}>
+                                                        <span class="winner-check">&#10003;</span>
+                                                    </template>
+                                                </div>
+                                                <div class="game-meta">
+                                                    <span class="game-confidence">{game.confidenceDisplay}</span>
+                                                    <template lwc:if={game.upsetBadge}>
+                                                        <span class="game-upset-badge">{game.upsetBadge}</span>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

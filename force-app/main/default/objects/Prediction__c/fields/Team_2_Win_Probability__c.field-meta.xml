@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Team_2_Win_Probability__c</fullName>
+    <label>Team 2 Win Probability</label>
+    <type>Percent</type>
+    <precision>5</precision>
+    <scale>1</scale>
+    <required>false</required>
+</CustomField>

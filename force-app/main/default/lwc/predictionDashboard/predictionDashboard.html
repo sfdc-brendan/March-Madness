@@ -1,0 +1,232 @@
+<template>
+    <div class="command-center">
+        <template lwc:if={isLoading}>
+            <div class="loading-wrap">
+                <lightning-spinner alternative-text="Loading scoreboard" size="large"></lightning-spinner>
+            </div>
+        </template>
+
+        <template lwc:if={isReady}>
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <h2 class="top-bar-title">
+                        <lightning-icon icon-name="utility:record" size="xx-small" class="basketball-icon"></lightning-icon>
+                        Men's College Hoops Scoreboard
+                    </h2>
+                </div>
+                <div class="top-bar-right">
+                    <template lwc:if={hasLiveGames}>
+                        <span class="live-indicator">
+                            <span class="live-dot"></span>
+                            {liveGameCount} LIVE
+                        </span>
+                    </template>
+                    <span class="updated-label">Updated {asOfTime}</span>
+                    <lightning-button-icon
+                        icon-name="utility:refresh"
+                        alternative-text="Refresh"
+                        variant="border-filled"
+                        onclick={handleRefreshScores}
+                        disabled={isRefreshing}
+                        class="refresh-btn">
+                    </lightning-button-icon>
+                </div>
+            </div>
+
+            <!-- Stat Tiles -->
+            <div class="stats-grid">
+                <div class="stat-tile">
+                    <div class="stat-icon-box orange">
+                        <lightning-icon icon-name="utility:event" size="small" class="stat-icon-white"></lightning-icon>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number">{totalScoreboardGames}</span>
+                        <span class="stat-desc">Games</span>
+                    </div>
+                </div>
+                <div class="stat-tile">
+                    <div class="stat-icon-box red">
+                        <lightning-icon icon-name="utility:live" size="small" class="stat-icon-white"></lightning-icon>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number">{liveGameCount}</span>
+                        <span class="stat-desc">Live Now</span>
+                    </div>
+                </div>
+                <div class="stat-tile">
+                    <div class="stat-icon-box green">
+                        <lightning-icon icon-name="utility:check" size="small" class="stat-icon-white"></lightning-icon>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number">{completedGames}</span>
+                        <span class="stat-desc">Final</span>
+                    </div>
+                </div>
+                <div class="stat-tile">
+                    <div class="stat-icon-box blue">
+                        <lightning-icon icon-name="utility:clock" size="small" class="stat-icon-white"></lightning-icon>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number">{scheduledGames}</span>
+                        <span class="stat-desc">Upcoming</span>
+                    </div>
+                </div>
+                <div class="stat-tile">
+                    <div class="stat-icon-box purple">
+                        <lightning-icon icon-name="utility:world" size="small" class="stat-icon-white"></lightning-icon>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number">{conferenceCount}</span>
+                        <span class="stat-desc">Conf. Tournaments</span>
+                    </div>
+                </div>
+                <div class="stat-tile">
+                    <div class="stat-icon-box teal">
+                        <lightning-icon icon-name="utility:news" size="small" class="stat-icon-white"></lightning-icon>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number">{newsCount}</span>
+                        <span class="stat-desc">News Articles</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-grid">
+                <!-- Scoreboard -->
+                <div class="games-section">
+                    <div class="section-header">
+                        <h3 class="section-title">{todayDate}</h3>
+                        <lightning-combobox
+                            label="Conference"
+                            value={selectedConference}
+                            options={conferenceFilterOptions}
+                            onchange={handleConferenceFilter}
+                            variant="label-hidden"
+                            class="conf-filter">
+                        </lightning-combobox>
+                    </div>
+
+                    <template lwc:if={hasScoreboardGames}>
+                        <div class="scoreboard-grid">
+                            <template for:each={enrichedGames} for:item="game">
+                                <div key={game.key} class="sb-card">
+                                    <!-- Team Rows -->
+                                    <div class="sb-matchup">
+                                        <!-- Away Team (top row) -->
+                                        <div class={game.awayRowClass}>
+                                            <div class="sb-team-left">
+                                                <template lwc:if={game.hasAwayLogo}>
+                                                    <img src={game.awayLogoUrl} alt="" class="sb-logo" onerror={handleLogoError}>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div class="sb-logo-placeholder"></div>
+                                                </template>
+                                                <span class="sb-team-name">{game.awayDisplayName}</span>
+                                            </div>
+                                            <div class="sb-team-right">
+                                                <span class={game.awayScoreClass}>{game.awayScoreDisplay}</span>
+                                            </div>
+                                        </div>
+                                        <!-- Home Team (bottom row) -->
+                                        <div class={game.homeRowClass}>
+                                            <div class="sb-team-left">
+                                                <template lwc:if={game.hasHomeLogo}>
+                                                    <img src={game.homeLogoUrl} alt="" class="sb-logo" onerror={handleLogoError}>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div class="sb-logo-placeholder"></div>
+                                                </template>
+                                                <span class="sb-team-name">{game.homeDisplayName}</span>
+                                            </div>
+                                            <div class="sb-team-right">
+                                                <span class={game.homeScoreClass}>{game.homeScoreDisplay}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Status + Action Row -->
+                                    <div class="sb-status-row">
+                                        <span class={game.statusClass}>{game.statusLabel}</span>
+                                        <template lwc:if={game.hasBroadcast}>
+                                            <span class="sb-broadcast">{game.broadcastDisplay}</span>
+                                        </template>
+                                        <template lwc:if={game.hasAction}>
+                                            <span class={game.actionClass}>{game.actionLabel}</span>
+                                        </template>
+                                    </div>
+                                    <!-- Note (Conference + Round) -->
+                                    <template lwc:if={game.noteDisplay}>
+                                        <div class="sb-note">{game.noteDisplay}</div>
+                                    </template>
+                                    <!-- Odds -->
+                                    <template lwc:if={game.hasOdds}>
+                                        <div class="sb-odds">
+                                            <span class="sb-odds-text">{game.oddsDisplay}</span>
+                                            <template lwc:if={game.ouDisplay}>
+                                                <span class="sb-odds-text">{game.ouDisplay}</span>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:else>
+                        <div class="empty-games-state">
+                            <lightning-icon icon-name="utility:event" size="large"></lightning-icon>
+                            <h3>No Games Found</h3>
+                            <p>Scoreboard data will appear when games are scheduled.</p>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- News Sidebar -->
+                <div class="news-sidebar">
+                    <div class="section-header">
+                        <h3 class="section-title">Latest News</h3>
+                        <span class="verified-label">
+                            <lightning-icon icon-name="utility:check" size="xx-small" class="verified-check"></lightning-icon>
+                            Verified
+                        </span>
+                    </div>
+                    <template lwc:if={hasNews}>
+                        <div class="news-stack">
+                            <template for:each={recentNews} for:item="article">
+                                <div key={article.key} class={article.newsItemClass}>
+                                    <template lwc:if={article.hasImage}>
+                                        <div class="news-item-image-wrap">
+                                            <img src={article.imageUrl} alt="" class="news-item-image" loading="lazy" onerror={handleNewsImageError}>
+                                        </div>
+                                    </template>
+                                    <div class="news-item-content">
+                                        <div class="news-item-header">
+                                            <template lwc:if={article.hasTeam}>
+                                                <template lwc:if={article.teamLogo}>
+                                                    <img src={article.teamLogo} alt="" class="news-team-logo" loading="lazy">
+                                                </template>
+                                                <span class="news-team-name">{article.teamName}</span>
+                                            </template>
+                                            <span class={article.sourceBadgeClass}>{article.Source_Type__c}</span>
+                                            <span class="news-time">{article.timeAgo}</span>
+                                        </div>
+                                        <p class="news-headline">{article.headline}</p>
+                                        <template lwc:if={article.Summary__c}>
+                                            <p class="news-summary">{article.Summary__c}</p>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-news">
+                            <p>No news articles yet.</p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

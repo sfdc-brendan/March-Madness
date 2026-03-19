@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Winner__c</fullName>
+    <label>Winner</label>
+    <type>Lookup</type>
+    <referenceTo>Team__c</referenceTo>
+    <relationshipLabel>Games Won</relationshipLabel>
+    <relationshipName>Games_Won</relationshipName>
+    <required>false</required>
+    <deleteConstraint>SetNull</deleteConstraint>
+</CustomField>

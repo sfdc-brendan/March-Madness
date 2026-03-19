@@ -1,0 +1,152 @@
+<template>
+    <lightning-card title="Tournament News Feed" icon-name="standard:news">
+        <div slot="actions">
+            <lightning-button
+                label="Refresh News"
+                icon-name="utility:refresh"
+                onclick={handleRefreshNews}
+                disabled={isRefreshing}>
+            </lightning-button>
+        </div>
+
+        <div class="feed-container">
+            <div class="filter-bar slds-p-horizontal_medium slds-p-bottom_small">
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <lightning-input
+                            type="search"
+                            label="Search"
+                            placeholder="Search headlines..."
+                            value={searchTerm}
+                            onchange={handleSearchChange}
+                            variant="label-hidden">
+                        </lightning-input>
+                    </div>
+                    <div class="filter-item">
+                        <lightning-combobox
+                            label="Sentiment"
+                            value={sentimentFilter}
+                            options={sentimentOptions}
+                            onchange={handleSentimentChange}
+                            variant="label-hidden"
+                            placeholder="All Sentiments">
+                        </lightning-combobox>
+                    </div>
+                    <div class="filter-item">
+                        <lightning-combobox
+                            label="Category"
+                            value={categoryFilter}
+                            options={categoryOptions}
+                            onchange={handleCategoryChange}
+                            variant="label-hidden"
+                            placeholder="All Categories">
+                        </lightning-combobox>
+                    </div>
+                </div>
+            </div>
+
+            <template if:true={isLoading}>
+                <div class="slds-align_absolute-center loading-container">
+                    <lightning-spinner alternative-text="Loading news" size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:false={isLoading}>
+                <template if:true={hasArticles}>
+                    <div class="news-grid slds-p-horizontal_medium">
+                        <template for:each={visibleArticles} for:item="article">
+                            <div key={article.Id} class="news-card" onclick={handleArticleClick} data-article-id={article.Id}>
+                                <template if:true={article.hasImage}>
+                                    <div class="card-image-container">
+                                        <img src={article.imageUrl} alt={article.headline} class="card-image" loading="lazy" onerror={handleImageError}>
+                                        <div class="image-overlay">
+                                            <span class={article.sourceTypeClass} title={article.verifiedTitle}>
+                                                <template if:true={article.isVerified}>
+                                                    <lightning-icon icon-name="utility:check" size="xx-small" class="verified-icon"></lightning-icon>
+                                                </template>
+                                                {article.sourceType}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div class="card-body">
+                                    <div class="card-header">
+                                        <div class="team-info">
+                                            <template if:true={article.hasTeam}>
+                                                <template if:true={article.teamLogo}>
+                                                    <img src={article.teamLogo} alt={article.teamName} class="news-team-logo" loading="lazy">
+                                                </template>
+                                                <span class="team-badge">{article.teamName}</span>
+                                            </template>
+                                            <template if:false={article.hasImage}>
+                                                <span class={article.sourceTypeClass} title={article.verifiedTitle}>
+                                                    <template if:true={article.isVerified}>
+                                                        <lightning-icon icon-name="utility:check" size="xx-small" class="verified-icon"></lightning-icon>
+                                                    </template>
+                                                    {article.sourceType}
+                                                </span>
+                                            </template>
+                                            <span class="article-date">{article.formattedDate}</span>
+                                        </div>
+                                        <div class="sentiment-indicator" title={article.sentimentLabel}>
+                                            <template if:true={article.isPositive}>
+                                                <lightning-icon icon-name="utility:arrowup" size="xx-small" class="sentiment-positive"></lightning-icon>
+                                            </template>
+                                            <template if:true={article.isNegative}>
+                                                <lightning-icon icon-name="utility:arrowdown" size="xx-small" class="sentiment-negative"></lightning-icon>
+                                            </template>
+                                            <template if:true={article.isNeutral}>
+                                                <lightning-icon icon-name="utility:dash" size="xx-small" class="sentiment-neutral"></lightning-icon>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <h3 class="article-headline">{article.headline}</h3>
+                                    <p class="article-summary">{article.Summary__c}</p>
+                                    <div class="card-footer">
+                                        <template if:true={article.Category__c}>
+                                            <lightning-badge label={article.Category__c} class="category-badge"></lightning-badge>
+                                        </template>
+                                        <template if:true={article.Relevance_Score__c}>
+                                            <span class="relevance-score" title="Relevance score">
+                                                <lightning-icon icon-name="utility:favorite" size="xx-small" class="relevance-icon"></lightning-icon>
+                                                {article.relevanceDisplay}
+                                            </span>
+                                        </template>
+                                        <template if:true={article.Source__c}>
+                                            <span class="article-source">{article.Source__c}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <template if:true={canLoadMore}>
+                        <div class="slds-align_absolute-center slds-p-around_medium">
+                            <lightning-button
+                                label="Load More"
+                                variant="neutral"
+                                onclick={handleLoadMore}
+                                icon-name="utility:chevrondown">
+                            </lightning-button>
+                        </div>
+                    </template>
+                </template>
+
+                <template if:false={hasArticles}>
+                    <div class="slds-align_absolute-center empty-state">
+                        <div class="slds-text-align_center">
+                            <lightning-icon icon-name="utility:news" size="large" class="empty-icon"></lightning-icon>
+                            <h3 class="slds-text-heading_medium slds-m-top_medium">No News Articles Yet</h3>
+                            <p class="slds-text-body_regular slds-m-top_small">Click "Refresh News" to start ingesting tournament news.</p>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </div>
+
+        <template if:true={isRefreshing}>
+            <lightning-spinner alternative-text="Refreshing news" size="small" class="refresh-spinner"></lightning-spinner>
+        </template>
+    </lightning-card>
+</template>

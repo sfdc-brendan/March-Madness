@@ -1,0 +1,449 @@
+:host {
+    --ct-blue: #003da5;
+    --ct-surface: #f1f3f5;
+    --ct-card: #ffffff;
+    --ct-border: #d5d8dc;
+    --ct-border-light: #e8eaed;
+    --ct-text: #1a1a1a;
+    --ct-text-secondary: #6c6d6f;
+    --ct-red: #dc2626;
+    --ct-green: #16a34a;
+    --ct-selected: #eef4ff;
+    --ct-radius: 8px;
+    --ct-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.conf-container {
+    background: var(--ct-surface);
+    border-radius: var(--ct-radius);
+    overflow: hidden;
+}
+
+/* Header */
+.conf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    background: var(--ct-card);
+    border-bottom: 2px solid var(--ct-border);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.conf-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--ct-text);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+.conf-meta {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.15rem;
+    flex-wrap: wrap;
+}
+
+.meta-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.meta-badge.live {
+    background: #fef2f2;
+    color: var(--ct-red);
+    border: 1px solid #fecaca;
+}
+
+.meta-badge.active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.meta-badge.complete {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.meta-badge.total {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.conf-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.updated-text {
+    font-size: 0.65rem;
+    color: var(--ct-text-secondary);
+}
+
+.conf-search {
+    width: 180px;
+}
+
+.loading-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    gap: 0.75rem;
+}
+
+.loading-text {
+    font-size: 0.8rem;
+    color: var(--ct-text-secondary);
+}
+
+/* Layout */
+.conf-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: 500px;
+}
+
+/* Left panel - conference list */
+.conf-list-panel {
+    border-right: 1px solid var(--ct-border);
+    overflow-y: auto;
+    max-height: 700px;
+    padding: 0.4rem;
+    background: var(--ct-card);
+}
+
+.conf-card {
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.12s;
+    border: 1px solid transparent;
+    margin-bottom: 1px;
+}
+
+.conf-card:hover {
+    background: var(--ct-selected);
+}
+
+.conf-card.selected {
+    background: var(--ct-selected);
+    border-color: var(--ct-blue);
+}
+
+.conf-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.conf-name {
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: var(--ct-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.status-badge {
+    font-size: 0.55rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.status-badge.live {
+    background: var(--ct-red);
+    color: #fff;
+    animation: pulse-status 2s infinite;
+}
+
+.status-badge.active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.complete {
+    background: #e8eaed;
+    color: #555;
+}
+
+.status-badge.upcoming {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+@keyframes pulse-status {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.conf-card-bottom {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.15rem;
+}
+
+.conf-progress {
+    font-size: 0.65rem;
+    color: var(--ct-text-secondary);
+}
+
+.live-dot-sm {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ct-red);
+    animation: pulse-status 1.5s infinite;
+}
+
+/* Right panel - detail */
+.conf-detail-panel {
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    max-height: 700px;
+}
+
+.detail-header {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--ct-blue);
+}
+
+.detail-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--ct-text);
+    margin: 0;
+}
+
+.detail-stats {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.35rem;
+}
+
+.detail-stat {
+    font-size: 0.7rem;
+    color: var(--ct-text-secondary);
+    font-weight: 500;
+}
+
+.detail-stat.live {
+    color: var(--ct-red);
+    font-weight: 700;
+}
+
+/* Game cards */
+.games-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.game-card {
+    background: var(--ct-card);
+    border: 1px solid var(--ct-border-light);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.gc-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    background: #fafafa;
+    border-bottom: 1px solid var(--ct-border-light);
+}
+
+.gc-round {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--ct-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.game-status {
+    font-size: 0.6rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.game-status.live {
+    color: var(--ct-red);
+    animation: pulse-status 2s infinite;
+}
+
+.game-status.final {
+    color: var(--ct-text-secondary);
+}
+
+.game-status.scheduled {
+    color: var(--ct-text-secondary);
+    font-weight: 500;
+}
+
+.gc-broadcast {
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: var(--ct-text-secondary);
+    text-transform: uppercase;
+    margin-left: auto;
+}
+
+.gc-matchup {
+    padding: 0;
+}
+
+.game-team {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.35rem 0.6rem;
+    border-bottom: 1px solid var(--ct-border-light);
+}
+
+.game-team:last-child {
+    border-bottom: none;
+}
+
+.game-team.winner .gc-team-name {
+    font-weight: 800;
+}
+
+.game-team.winner .team-score {
+    font-weight: 800;
+}
+
+.gc-team-left {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.gc-logo {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.gc-logo-ph {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--ct-border-light);
+    flex-shrink: 0;
+}
+
+.gc-team-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ct-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.team-score {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ct-text);
+    min-width: 1.75rem;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.team-score.live {
+    color: var(--ct-red);
+}
+
+.team-score.winner {
+    font-weight: 800;
+}
+
+.gc-odds {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.2rem 0.6rem 0.3rem;
+    font-size: 0.58rem;
+    color: var(--ct-text-secondary);
+    border-top: 1px solid var(--ct-border-light);
+}
+
+/* Empty states */
+.empty-state,
+.empty-detail,
+.empty-games {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+    color: var(--ct-text-secondary);
+    min-height: 300px;
+}
+
+.empty-state h3,
+.empty-detail h3 {
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ct-text);
+}
+
+.empty-state p,
+.empty-detail p,
+.empty-games p {
+    margin-top: 0.4rem;
+    max-width: 300px;
+    font-size: 0.8rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .conf-layout {
+        grid-template-columns: 1fr;
+    }
+    .conf-list-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--ct-border);
+        max-height: 250px;
+    }
+    .conf-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .game-status.live,
+    .status-badge.live,
+    .live-dot-sm {
+        animation: none;
+    }
+    .conf-card {
+        transition: none;
+    }
+}

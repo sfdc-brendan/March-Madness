@@ -1,0 +1,292 @@
+<template>
+    <lightning-card title={cardTitle} icon-name="standard:insights">
+        <div slot="actions">
+            <lightning-button
+                label="Refresh Research"
+                icon-name="utility:refresh"
+                onclick={handleRefreshResearch}
+                disabled={isRefreshing}
+                variant="brand-outline">
+            </lightning-button>
+        </div>
+
+        <template if:true={isLoading}>
+            <div class="slds-align_absolute-center loading-container">
+                <lightning-spinner alternative-text="Loading team data" size="large"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <template if:true={hasTeam}>
+                <!-- Team Header -->
+                <div class="team-header-panel slds-p-around_medium">
+                    <div class="team-identity">
+                        <span class="team-seed-pill">{seedDisplay}</span>
+                        <div class="team-meta">
+                            <h2 class="team-title">{team.Name}</h2>
+                            <div class="team-subtitle">
+                                <span>{team.Conference__c}</span>
+                                <template if:true={team.Region__c}>
+                                    <span class="meta-separator">|</span>
+                                    <span>{team.Region__c} Region</span>
+                                </template>
+                                <template if:true={team.Record__c}>
+                                    <span class="meta-separator">|</span>
+                                    <span>{team.Record__c}</span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-power">
+                        <div class="power-ring" style={powerRingStyle}>
+                            <span class="power-value">{powerRating}</span>
+                        </div>
+                        <span class="power-label">Power Rating</span>
+                    </div>
+                </div>
+
+                <!-- Sentiment Gauge -->
+                <template if:true={hasLatestResearch}>
+                    <div class="gauge-section slds-p-horizontal_medium">
+                        <div class="gauge-container">
+                            <div class="gauge-label-left">Negative</div>
+                            <div class="gauge-track">
+                                <div class="gauge-fill" style={sentimentGaugeStyle}></div>
+                                <div class="gauge-marker" style={sentimentMarkerStyle}></div>
+                            </div>
+                            <div class="gauge-label-right">Positive</div>
+                        </div>
+                        <span class="gauge-value">{sentimentDisplay}</span>
+                    </div>
+                </template>
+
+                <!-- Tournament Likelihood -->
+                <template if:true={hasTournamentLikelihood}>
+                    <div class="likelihood-bar slds-p-horizontal_medium slds-m-bottom_small">
+                        <span class="likelihood-label">Tournament Advancement</span>
+                        <div class="likelihood-track">
+                            <div class="likelihood-fill" style={likelihoodStyle}></div>
+                        </div>
+                        <span class="likelihood-value">{likelihoodDisplay}</span>
+                    </div>
+                </template>
+
+                <!-- Tabbed Content -->
+                <lightning-tabset variant="scoped">
+                    <lightning-tab label="Latest Research" icon-name="utility:knowledge_base">
+                        <template if:true={hasLatestResearch}>
+                            <div class="research-content slds-p-around_medium">
+                                <div class="research-date">
+                                    <lightning-icon icon-name="utility:clock" size="xx-small"></lightning-icon>
+                                    <span>{latestResearchDate}</span>
+                                </div>
+                                <div class="research-summary">
+                                    <h4 class="subsection-title">Summary</h4>
+                                    <p class="research-text">{latestResearch.Summary__c}</p>
+                                </div>
+                                <template if:true={latestResearch.Key_Factors__c}>
+                                    <div class="research-factors">
+                                        <h4 class="subsection-title">Key Factors</h4>
+                                        <p class="research-text">{latestResearch.Key_Factors__c}</p>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:false={hasLatestResearch}>
+                            <div class="slds-align_absolute-center tab-empty">
+                                <p>No research data available. Click "Refresh Research" to generate.</p>
+                            </div>
+                        </template>
+                    </lightning-tab>
+
+                    <lightning-tab label="News" icon-name="utility:news">
+                        <c-march-madness-news-feed team-id={effectiveTeamId} limit-count="10"></c-march-madness-news-feed>
+                    </lightning-tab>
+
+                    <lightning-tab label="Statistics" icon-name="utility:chart" onactive={handleStatsTabActive}>
+                        <!-- Team Stats Grid -->
+                        <div class="stats-content slds-p-around_medium">
+                            <div class="key-stats-grid">
+                                <div class="ks-card">
+                                    <span class="ks-label">NET Rank</span>
+                                    <span class="ks-value">{netRankDisplay}</span>
+                                </div>
+                                <div class="ks-card">
+                                    <span class="ks-label">KenPom</span>
+                                    <span class="ks-value">{kenPomDisplay}</span>
+                                </div>
+                                <div class="ks-card">
+                                    <span class="ks-label">PPG</span>
+                                    <span class="ks-value">{ppgDisplay}</span>
+                                </div>
+                                <div class="ks-card">
+                                    <span class="ks-label">Opp PPG</span>
+                                    <span class="ks-value">{oppPpgDisplay}</span>
+                                </div>
+                                <div class="ks-card">
+                                    <span class="ks-label">SOS</span>
+                                    <span class="ks-value">{sosDisplay}</span>
+                                </div>
+                                <div class="ks-card">
+                                    <span class="ks-label">Record</span>
+                                    <span class="ks-value">{recordDisplay}</span>
+                                </div>
+                                <div class="ks-card">
+                                    <span class="ks-label">Last 10</span>
+                                    <span class="ks-value">{last10Display}</span>
+                                </div>
+                                <template lwc:if={hasPerformance}>
+                                    <div class="ks-card">
+                                        <span class="ks-label">Streak</span>
+                                        <span class={streakClass}>{streakDisplay}</span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <template lwc:if={hasPerformance}>
+                                <div class="perf-records-row">
+                                    <template lwc:if={performance.confRecord}>
+                                        <span class="perf-rec-pill">Conf: {performance.confRecord}</span>
+                                    </template>
+                                    <template lwc:if={performance.homeRecord}>
+                                        <span class="perf-rec-pill">Home: {performance.homeRecord}</span>
+                                    </template>
+                                    <template lwc:if={performance.awayRecord}>
+                                        <span class="perf-rec-pill">Away: {performance.awayRecord}</span>
+                                    </template>
+                                    <template lwc:if={performance.espnRank}>
+                                        <span class="perf-rec-pill rank">ESPN #{performance.espnRank}</span>
+                                    </template>
+                                    <template lwc:if={performance.standingSummary}>
+                                        <span class="perf-rec-pill standing">{performance.standingSummary}</span>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <!-- Performance Chart -->
+                            <template lwc:if={isLoadingPerf}>
+                                <div class="chart-loading">
+                                    <lightning-spinner alternative-text="Loading performance" size="small"></lightning-spinner>
+                                    <span>Loading game history from ESPN...</span>
+                                </div>
+                            </template>
+
+                            <template lwc:if={hasPerformance}>
+                                <div class="perf-chart-section">
+                                    <h4 class="stat-group-title">Game-by-Game Performance</h4>
+                                    <div class="chart-legend">
+                                        <span class="legend-item"><span class="legend-dot win"></span> Win</span>
+                                        <span class="legend-item"><span class="legend-dot loss"></span> Loss</span>
+                                        <span class="legend-item"><span class="legend-dot tourney"></span> Conf. Tournament</span>
+                                    </div>
+                                    <div class="perf-chart">
+                                        <div class="chart-y-axis">
+                                            <span class="y-label">{chartMaxLabel}</span>
+                                            <span class="y-label">{chartMidLabel}</span>
+                                            <span class="y-label">0</span>
+                                        </div>
+                                        <div class="chart-area">
+                                            <div class="chart-grid-line top"></div>
+                                            <div class="chart-grid-line mid"></div>
+                                            <div class="chart-bars">
+                                                <template for:each={chartGames} for:item="game">
+                                                    <div key={game.key} class={game.barWrapClass} title={game.tooltip}>
+                                                        <div class="bar-scored" style={game.scoredStyle}></div>
+                                                        <div class="bar-allowed" style={game.allowedStyle}></div>
+                                                        <div class={game.marginBadgeClass}>{game.marginLabel}</div>
+                                                        <div class="bar-label">{game.oppLabel}</div>
+                                                        <template lwc:if={game.isConfTourney}>
+                                                            <div class="tourney-marker"></div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Recent Games Table -->
+                                <div class="games-table-section">
+                                    <h4 class="stat-group-title">Recent Results</h4>
+                                    <div class="games-table">
+                                        <div class="gt-header">
+                                            <span class="gt-cell date">Date</span>
+                                            <span class="gt-cell result">Result</span>
+                                            <span class="gt-cell opp">Opponent</span>
+                                            <span class="gt-cell score">Score</span>
+                                            <span class="gt-cell note">Note</span>
+                                        </div>
+                                        <template for:each={recentGamesTable} for:item="game">
+                                            <div key={game.key} class={game.rowClass}>
+                                                <span class="gt-cell date">{game.dateDisplay}</span>
+                                                <span class={game.resultClass}>{game.resultLabel}</span>
+                                                <span class="gt-cell opp">
+                                                    <template lwc:if={game.opponentLogo}>
+                                                        <img src={game.opponentLogo} alt="" class="gt-logo" onerror={handleLogoError}>
+                                                    </template>
+                                                    <template lwc:if={game.opponentRank}>
+                                                        <span class="gt-rank">#{game.opponentRank}</span>
+                                                    </template>
+                                                    {game.oppDisplay}
+                                                </span>
+                                                <span class="gt-cell score">{game.scoreDisplay}</span>
+                                                <span class="gt-cell note">{game.noteDisplay}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template lwc:if={perfError}>
+                                <div class="slds-align_absolute-center tab-empty">
+                                    <p>Could not load performance data. Click the Statistics tab to retry.</p>
+                                </div>
+                            </template>
+                        </div>
+                    </lightning-tab>
+
+                    <lightning-tab label="Predictions" icon-name="utility:magicwand">
+                        <template if:true={hasPredictions}>
+                            <div class="predictions-content slds-p-around_medium">
+                                <template for:each={teamPredictions} for:item="pred">
+                                    <div key={pred.Id} class={pred.cardClass}>
+                                        <div class="pred-matchup">
+                                            <span class="pred-teams">{pred.matchupDisplay}</span>
+                                            <lightning-badge label={pred.Game__r.Round__c}></lightning-badge>
+                                        </div>
+                                        <div class="pred-outcome">
+                                            <span class="pred-winner">{pred.Predicted_Winner__r.Name}</span>
+                                            <span class="pred-confidence">{pred.confidenceDisplay}</span>
+                                            <template if:true={pred.hasResult}>
+                                                <lightning-badge label={pred.resultLabel} class={pred.resultBadgeClass}></lightning-badge>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:false={hasPredictions}>
+                            <div class="slds-align_absolute-center tab-empty">
+                                <p>No predictions involving this team yet.</p>
+                            </div>
+                        </template>
+                    </lightning-tab>
+                </lightning-tabset>
+            </template>
+
+            <template if:false={hasTeam}>
+                <div class="slds-align_absolute-center empty-state">
+                    <div class="slds-text-align_center">
+                        <lightning-icon icon-name="utility:search" size="large" class="empty-icon"></lightning-icon>
+                        <h3 class="slds-text-heading_medium slds-m-top_medium">No Team Selected</h3>
+                        <p class="slds-text-body_regular slds-m-top_small">Select a team to view detailed research and intelligence.</p>
+                    </div>
+                </div>
+            </template>
+        </template>
+
+        <template if:true={isRefreshing}>
+            <lightning-spinner alternative-text="Refreshing research" size="small" class="refresh-spinner"></lightning-spinner>
+        </template>
+    </lightning-card>
+</template>
